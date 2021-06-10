@@ -5,8 +5,12 @@ app.config.from_object('config')
 
 @app.route('/')
 def index():
+    """Method used to render the index template."""
+
     return render_template('index.html')
 
 @app.route('/answer')
 def answer():
+    """Method used to render the answer template."""
+
     pass
