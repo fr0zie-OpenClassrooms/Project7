@@ -1,7 +1,9 @@
 import json
 import requests
 import re
-from config import GOOGLE_API
+import urllib.parse as urlparse
+from config import GOOGLE_API, MEDIAWIKI_API
+
 
 class Parser:
     """Class parsing the user input to get only keywords."""
@@ -10,7 +12,7 @@ class Parser:
         """Class initialization."""
 
         self.input = input
-        self.result = ""
+        self.result = ''
 
     def parse(self):
         """Method used to parse the user input."""
@@ -32,6 +34,7 @@ class Parser:
         
         self.result = " ".join(result)
 
+
 class GoogleAPI:
     """Class used to get geodata from the user input."""
 
@@ -40,6 +43,7 @@ class GoogleAPI:
 
         self.query = query
         self.geodata = {}
+        self.map = ''
 
     def get_geodata(self):
         """Method used to get geodata."""
@@ -54,6 +58,48 @@ class GoogleAPI:
 
         self.geodata['latitude'] = json['results'][0]['geometry']['location']['lat']
         self.geodata['longitude'] = json['results'][0]['geometry']['location']['lng']
+
+    def get_map(self):
+        """Method used to get the embedded map link."""
+
+        coordinates = [str(self.geodata['latitude']), str(self.geodata['longitude'])]
+        params = {
+            'center': ",".join(coordinates),
+            'zoom': 18,
+            'key': GOOGLE_API['api_key']
+        }
+
+        url_parse = list(urlparse.urlparse(GOOGLE_API['map_url']))
+        query = dict(urlparse.parse_qsl(url_parse[4]))
+        query.update(params)
+
+        url_parse[4] = urlparse.urlencode(query)
+
+        self.map = urlparse.urlunparse(url_parse)
+
+
+class MediaWikiAPI:
+    """Class used to get details about a place from Media Wiki."""
+
+    def __init__(self, query):
+        """Class initialization."""
+
+        self.query = query
+        self.url = ''
+
+    def get_url(self):
+        """Method used to get URL from query."""
+
+        params = {
+            'action': 'query',
+            'list': 'search',
+            'srsearch': self.query,
+            'format': 'json'
+        }
+
+        result = requests.get(MEDIAWIKI_API['url'], params)
+        json = result.json()
+
 
 class Answer:
     """Class used to answer the user's query with personalized responses."""
