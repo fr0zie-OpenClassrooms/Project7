@@ -1,51 +1,47 @@
 import app.models as script
+import pytest
+import requests
 
 
 class TestParser:
 
-    def setup_method(self):
-        self.parser = script.Parser("Hello GrandPy! Je cherche l'adresse d'OpenClassrooms...")
-    
-    def test_parse(self):
+    @pytest.mark.parametrize('input, expected', [
+            ('Hello GrandPy! Je cherche l\'adresse d\'OpenClassrooms...', 'openclassrooms'),
+            ('J\'ai besoin que tu me donnes l\'adresse de la Tour Eiffel, GrandPy!', 'tour eiffel'),
+            ('Salut papy, peux-tu me dire comment rejoindre l\'Arc de Triomphe?', 'arc triomphe')
+        ])
+    def test_parse(self, input, expected):
+        self.parser = script.Parser(input)
         self.parser.parse()
-        assert self.parser.result == 'openclassrooms'
+        assert self.parser.result == expected
 
 class TestGoogleAPI:
 
-    def setup_method(self):
-        self.parser = script.Parser("Salut GrandPy! J'ai besoin de l'adresse d'OpenClassrooms!")
-        self.parser.parse()
-        self.google_api = script.GoogleAPI(self.parser.result)
-
-        self.geodata = {
-            'latitude': 48.8975156,
-            'longitude': 2.3833993
-        }
-        self.map = 'https://www.google.com/maps/embed/v1/view?center=48.8975156%2C2.3833993&zoom=18&key=AIzaSyC6CfQwsFI04fin1yEpsR3Il-6gYHaMr1M'
-
+    @pytest.mark.parametrize('input, expected', [
+            ('openclassrooms', {'latitude': 48.8975156, 'longitude': 2.3833993}),
+            ('tour eiffel', {'latitude': 48.85837009999999, 'longitude': 2.2944813}),
+            ('arc triomphe', {'latitude': 48.8737917, 'longitude': 2.2950275}),
+        ])
+    def test_get_geodata(self, input, expected):
+        self.google_api = script.GoogleAPI(input)
         self.google_api.get_geodata()
-        self.google_api.get_map()
-
-    def test_get_query(self):
-        assert self.google_api.query == 'openclassrooms'
-
-    def test_get_geodata(self):
-        assert self.geodata == self.google_api.geodata
-
-    def test_get_map(self):
-        assert self.map == self.google_api.map
-
+        assert self.google_api.geodata == expected
 
 class TestMediaWikiAPI:
 
     def setup_method(self):
-        self.parser = script.Parser("J'aurais besoin de l'adresse d'OpenClassrooms s'il te plait GrandPy!")
-        self.parser.parse()
-        self.mediawiki_api = script.MediaWikiAPI(self.parser.result)
+        self.mediawiki_api = script.MediaWikiAPI({'latitude': 48.8975156, 'longitude': 2.3833993})
+        self.mediawiki_api.get_pageid()
+        self.mediawiki_api.get_extract()
 
-        self.url = 'https://fr.wikipedia.org/w/api.php?action=query&list=search&srsearch=openclassrooms&format=json'
+    def test_get_pageid(self, monkeypatch):
+        def mock_result():
+            return 3120649
+        monkeypatch.setattr(script.MediaWikiAPI, 'get_pageid', mock_result)
+        assert self.mediawiki_api.pageid == 3120649
 
-        self.mediawiki_api.get_url()
-
-    def test_get_url(self):
-        assert self.url == self.mediawiki_api.url
+    def test_get_extract(self, monkeypatch):
+        def mock_result():
+            return "Le quai de la Gironde est un quai situé le long du canal Saint-Denis, à Paris, dans le 19e arrondissement."
+        monkeypatch.setattr(script.MediaWikiAPI, 'get_extract', mock_result)
+        assert self.mediawiki_api.extract == "Le quai de la Gironde est un quai situé le long du canal Saint-Denis, à Paris, dans le 19e arrondissement."

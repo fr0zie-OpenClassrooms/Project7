@@ -6,47 +6,47 @@ from config import GOOGLE_API, MEDIAWIKI_API
 
 
 class Parser:
-    """Class parsing the user input to get only keywords."""
+    '''Class parsing the user input to get only keywords.'''
 
     def __init__(self, input: str):
-        """Class initialization."""
+        '''Class initialization.'''
 
         self.input = input
         self.result = ''
 
     def parse(self):
-        """Method used to parse the user input."""
+        '''Method used to parse the user input.'''
 
         result = []
         stop_words = json.load(open('app/data/stop_words.json'))
 
-        self.input = self.input.lower()
+        self.input = re.sub('-', ' ', self.input).lower()
 
         for word in self.input.split():
-            word = word[2:] if "'" in word else word                
+            word = word[2:] if '\'' in word else word                
 
             word = re.sub('[!@#$?,:;.]*', '', word)
-
+            
             if word in stop_words['words']:
                 continue
 
             result.append(word)
-        
-        self.result = " ".join(result)
+
+        self.result = ' '.join(result)
 
 
 class GoogleAPI:
-    """Class used to get geodata from the user input."""
+    '''Class used to get geodata from the user input.'''
 
     def __init__(self, query):
-        """Class initialization."""
+        '''Class initialization.'''
 
         self.query = query
         self.geodata = {}
         self.map = ''
 
     def get_geodata(self):
-        """Method used to get geodata."""
+        '''Method used to get geodata.'''
 
         params = {
             'address': self.query + ',+FR',
@@ -59,62 +59,64 @@ class GoogleAPI:
         self.geodata['latitude'] = json['results'][0]['geometry']['location']['lat']
         self.geodata['longitude'] = json['results'][0]['geometry']['location']['lng']
 
-    def get_map(self):
-        """Method used to get the embedded map link."""
-
-        coordinates = [str(self.geodata['latitude']), str(self.geodata['longitude'])]
-        params = {
-            'center': ",".join(coordinates),
-            'zoom': 18,
-            'key': GOOGLE_API['api_key']
-        }
-
-        url_parse = list(urlparse.urlparse(GOOGLE_API['map_url']))
-        query = dict(urlparse.parse_qsl(url_parse[4]))
-        query.update(params)
-
-        url_parse[4] = urlparse.urlencode(query)
-
-        self.map = urlparse.urlunparse(url_parse)
-
 
 class MediaWikiAPI:
-    """Class used to get details about a place from Media Wiki."""
+    '''Class used to get details about a place from Media Wiki.'''
 
-    def __init__(self, query):
-        """Class initialization."""
+    def __init__(self, geodata):
+        '''Class initialization.'''
 
-        self.query = query
-        self.url = ''
+        self.geodata = '|'.join([str(geodata['latitude']), str(geodata['longitude'])])
+        self.pageid = 0
+        self.extract = ''
 
-    def get_url(self):
-        """Method used to get URL from query."""
+    def get_pageid(self):
+        '''Method used to get page ID from geodata.'''
 
         params = {
             'action': 'query',
-            'list': 'search',
-            'srsearch': self.query,
+            'list': 'geosearch',
+            'gscoord': self.geodata,
+            'gsradius': 1000,
             'format': 'json'
         }
 
         result = requests.get(MEDIAWIKI_API['url'], params)
         json = result.json()
 
+        self.pageid = json['query']['geosearch'][0]['pageid']
+        return self.pageid
+
+    def get_extract(self):
+        params = {
+            'action': 'query',
+            'pageids': self.pageid,
+            'prop': 'extracts',
+            'exintro': 1,
+            'explaintext': 1,
+            'format': 'json'
+        }
+
+        result = requests.get(MEDIAWIKI_API['url'], params)
+        json = result.json()
+
+        self.extract = json['query']['pages'][str(self.pageid)]['extract']
+        return self.extract
 
 class Answer:
-    """Class used to answer the user's query with personalized responses."""
+    '''Class used to answer the user's query with personalized responses.'''
 
     def __init__(self, google_api):
-        """Class initialization."""
+        '''Class initialization.'''
 
         self.google_api = google_api
 
     def get_place_address(self):
-        """Method used to answer a place address."""
+        '''Method used to answer a place address.'''
 
-        answer = "Bien sûr mon poussin ! La voici :"
+        answer = 'Bien sûr mon poussin ! La voici :'
 
     def get_place_details(self):
-        """Method used to answer a story about a place."""
+        '''Method used to answer a story about a place.'''
 
-        answer = "Mais t'ai-je déjà raconté l'histoire de ce quartier qui m'a vu en culottes courtes ?"
+        answer = 'Mais t\'ai-je déjà raconté l\'histoire de ce quartier qui m\'a vu en culottes courtes ?'

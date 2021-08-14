@@ -10,7 +10,7 @@ def index():
     return render_template('index.html')
 
 @app.route('/answer')
-def answer():
+def get_answer():
     """Method used to render the answer template."""
 
     pass
