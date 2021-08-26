@@ -39,7 +39,8 @@ class TestGoogleAPI:
                                 "location": {"lat": 48.8975156, "lng": 2.3833993},
                             },
                         }
-                    ]
+                    ],
+                    "status": "OK",
                 }
             ]
             mock = Mock()
@@ -49,16 +50,16 @@ class TestGoogleAPI:
         monkeypatch.setattr(requests, "get", get)
         self.google_api = script.GoogleAPI("openclassrooms")
         assert self.google_api.geodata == {
-            "address": "10 Quai de la Charente, 75019 Paris, France",
             "latitude": 48.8975156,
             "longitude": 2.3833993,
+            "status": "OK",
         }
 
 
 class TestMediaWikiAPI:
     def test_get_extract(self, monkeypatch):
         values = [
-            {"query": {"geosearch": [{"pageid": 3120649}]}},
+            {"query": {"geosearch": [{"pageid": 3120649}]}, "status": "OK"},
             {
                 "query": {
                     "pages": {
@@ -66,7 +67,8 @@ class TestMediaWikiAPI:
                             "extract": "Le quai de la Gironde",
                         }
                     }
-                }
+                },
+                "status": "OK",
             },
         ]
         mock = Mock()
@@ -77,7 +79,7 @@ class TestMediaWikiAPI:
 
         monkeypatch.setattr(requests, "get", get)
         self.mediawiki_api = script.MediaWikiAPI(
-            {"latitude": 48.8975156, "longitude": 2.3833993}
+            {"latitude": 48.8975156, "longitude": 2.3833993, "status": "OK"}
         )
         assert isinstance(self.mediawiki_api.extract, str)
-        assert self.mediawiki_api.extract.startswith("Le quai de la Gironde")
+        assert self.mediawiki_api.extract.index("Le quai de la Gironde")

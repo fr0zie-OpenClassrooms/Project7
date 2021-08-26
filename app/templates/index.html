@@ -4,13 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>{{ config.APP.NAME }}</title>
+    <title>GrandPy Bot</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
-    <link href="" rel="icon" type="image/x-icon" />
+    <link href="{{ url_for('static', filename='favicon.ico') }}" rel="icon" type="image/x-icon" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    <script src="../static/js/script.js" defer></script>
 </head>
 
 <body>
@@ -25,9 +24,9 @@
         <div class="p-4 mb-4 bg-light">
             <div class="container-fluid py-5" id="answer"></div>
 
-            <section class="row" id="form">
-                <h2>Dis-moi, qu'est-ce qui t'amène ici?</h2>
-                <form action="/" method="GET">
+            <section class="row">
+                <h3>Dis-moi, qu'est-ce qui t'amène ici?</h3>
+                <form id="form" action="/" method="GET">
                     <fieldset>
                         <div class="text">
                             <input type="search" name="question" id="question" class="col-12"
@@ -52,5 +51,17 @@
         </footer>
     </div>
 </body>
+
+<template id="result">
+    <section class="col-12">
+        <div class="alert" role="alert">
+            <p class="address"></p>
+            <p class="extract"></p>
+        </div>
+        <div class="d-inline-flex p-2 alert alert-light" role="alert">
+            <p class="question"></p>
+        </div>
+    </section>
+</template>
 
 </html>

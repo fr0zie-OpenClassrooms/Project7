@@ -51,7 +51,6 @@ class GoogleAPI:
 
         self.query = query
         self.address = ""
-        self.map = ""
         self.status = ""
         self.geodata = {}
 
@@ -75,9 +74,6 @@ class GoogleAPI:
                 + address[1:]
                 + "."
             )
-            self.map = "https://maps.googleapis.com/maps/api/staticmap?center={address}&zoom=17&size=600x300&maptype=roadmap&key={key}".format(
-                address=params["address"], key=params["key"]
-            )
             self.status = "alert-success"
             self.geodata["latitude"] = json["results"][0]["geometry"]["location"]["lat"]
             self.geodata["longitude"] = json["results"][0]["geometry"]["location"][
@@ -85,7 +81,6 @@ class GoogleAPI:
             ]
         else:
             self.address = "Désolé mon grand, je ne connais pas " + self.query + "..."
-            self.map = "./static/img/error.png"
             self.status = "alert-warning"
 
 
