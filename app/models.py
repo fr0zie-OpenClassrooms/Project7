@@ -65,6 +65,7 @@ class GoogleAPI:
         json = result.json()
 
         self.geodata["status"] = json["status"]
+
         if json["status"] != "ZERO_RESULTS":
             address = json["results"][0]["formatted_address"]
             self.address = (
