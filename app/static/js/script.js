@@ -1,22 +1,23 @@
 $(document).ready(function () {
-    $('#form').on('submit', function (event) {
-        event.stopImmediatePropagation();
+    $('#form').on('submit', (function (event) {
         event.preventDefault();
+        event.stopImmediatePropagation();
         $.ajax({
             data: {
-                question: $('#question').val(),
+                question: $("#question").val()
             },
             type: 'GET',
-            url: '/result'
-        }).done(create_message);
-    });
-});
+            url: '/result',
+            success: showResult
+        });
+    }));
 
-function create_message(result) {
-    section = $("#result").children().clone();
-    $('.alert', section).addClass(result.status);
-    $('.address', section).text(result.address);
-    $('.extract', section).text(result.extract);
-    $('.question', section).text(result.question);
-    section.appendTo("#answer");
-}
+    function showResult(result) {
+        clone = $($('#result').html());
+        $('.alert', clone).addClass(result.status);
+        $('.address', clone).text(result.address);
+        $('.extract', clone).text(result.extract);
+        $('.question', clone).text(result.question);
+        clone.appendTo("#answer");
+    }
+});
