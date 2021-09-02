@@ -16,6 +16,7 @@ $(document).ready(function () {
         clone = $($('#result').html());
         $('.alert', clone).addClass(result.status);
         $('.address', clone).text(result.address);
+        $('.map', clone).prepend($('<img>', { src: result.map }))
         $('.extract', clone).text(result.extract);
         $('.question', clone).text(result.question);
         clone.appendTo("#answer");

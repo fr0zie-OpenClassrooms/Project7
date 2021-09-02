@@ -24,6 +24,7 @@ def get_result():
     return jsonify(
         status=google_data.status,
         address=google_data.address,
+        map=google_data.map,
         extract=mediawiki_data.extract,
         question=question,
     )

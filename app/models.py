@@ -51,6 +51,7 @@ class GoogleAPI:
 
         self.query = query
         self.address = ""
+        self.map = ""
         self.status = ""
         self.geodata = {}
 
@@ -69,19 +70,16 @@ class GoogleAPI:
         if json["status"] != "ZERO_RESULTS":
             address = json["results"][0]["formatted_address"]
             self.address = (
-                random.choice(self.answers)
-                + " "
-                + address[0].lower()
-                + address[1:]
-                + "."
+                random.choice(self.answers) + " " + address + "."
             )
+            self.map = "https://maps.googleapis.com/maps/api/staticmap?center={address}&zoom=17&size=600x300&maptype=roadmap&key={key}".format(address=params["address"], key=params["key"])
             self.status = "alert-success"
             self.geodata["latitude"] = json["results"][0]["geometry"]["location"]["lat"]
             self.geodata["longitude"] = json["results"][0]["geometry"]["location"][
                 "lng"
             ]
         else:
-            self.address = "Désolé mon grand, je ne connais pas " + self.query + "..."
+            self.address = "Désolé mon grand, je ne connais pas '" + self.query + "'..."
             self.status = "alert-warning"
 
 
